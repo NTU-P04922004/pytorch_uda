@@ -1,4 +1,5 @@
 import os
+import random
 from datetime import datetime
 
 import cv2
@@ -46,3 +47,14 @@ def tensor_to_cv2_image(img_tensor, size=(128, 128)):
     img = cv2.resize(img, size, interpolation=cv2.INTER_CUBIC)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     return img
+
+
+def seed_everything(seed, debug=False):
+    np.random.seed(seed)
+    torch.set_rng_state(torch.manual_seed(seed).get_state())
+    random.seed(seed)
+
+    torch.backends.cudnn.deterministic = debug
+    #the following line gives ~10% speedup
+    #but may lead to some stochasticity in the results
+    torch.backends.cudnn.benchmark = not debug

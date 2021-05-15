@@ -1,0 +1,49 @@
+exp_name: cifar10_momentum_randaugment
+
+trainer_name: CIFARTrainer
+
+model:
+  num_classes: 10
+
+trainer:
+  num_epochs: 200
+  save_frequency: 100 # epochs
+  log_frequency: 390 # iterations
+  val_frequency: 390 # iterations
+  ema_frequency: 100 # iterations
+  ema_decay_rate: 0.9999
+
+train_dataset:
+  root: /home/kuohsin/workspace/dataset
+  train: True
+
+val_dataset:
+  root: /home/kuohsin/workspace/dataset
+  train: False
+
+train_dataloader:
+  batch_size: 128
+  num_workers: 4
+  drop_last: True
+  shuffle: True
+  pin_memory: True
+
+val_dataloader:
+  batch_size: 256
+  num_workers: 4
+  drop_last: False
+  shuffle: False
+  pin_memory: True
+
+optimizer:
+  lr: 1.e-1
+  # betas: [0.9, 0.999]
+  weight_decay: 5.e-4
+  # eps: 1e-8
+  # amsgrad: False
+  momentum: 0.9
+  # nesterov: True
+
+scheduler:
+  T_max: 200
+  eta_min: 1.e-4

@@ -11,6 +11,7 @@ from torchvision import transforms
 from torchvision.datasets.utils import check_integrity
 
 import utils
+from randaugment import RandAugment
 
 
 class CIFAR10Dataset(Dataset):
@@ -75,10 +76,13 @@ class CIFAR10Dataset(Dataset):
         self.data = np.vstack(self.data).reshape(-1, 3, 32, 32)
         self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
 
-        if self.train:
+        if self.train and self.supervised_count != 0:
+            # TODO: make the semantic meaning of supervised_count more clear
+            # "supervised_count" is used to specify how many data to be used in semi or
+            # normal supervised training.
             if self.supervised_count > 0:
                 self.data = self.data[:self.supervised_count]
-            else:
+            elif self.supervised_count < 0:
                 self.data = self.data[self.supervised_count * -1:]
 
         self._load_meta()
@@ -148,6 +152,7 @@ class CIFAR10Dataset(Dataset):
             transform = transforms.Compose([
                 transforms.RandomCrop(32, padding=4, padding_mode="reflect"),
                 transforms.RandomHorizontalFlip(),
+                RandAugment(3, 5),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ])
@@ -157,118 +162,3 @@ class CIFAR10Dataset(Dataset):
                 transforms.Normalize(mean, std),
             ])
         return transform
-
-
-if __name__ == "__main__":
-
-    from itertools import cycle
-    import torch
-    import matplotlib.pyplot as plt
-    from tqdm import tqdm
-
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-
-    SUPERVISED_COUNT = 4000
-    EPOCHS = 50
-
-    s_dataset = CIFAR10Dataset(root="/home/kuohsin/workspace/dataset", train=True, supervised_count=SUPERVISED_COUNT)
-    us_dataset = CIFAR10Dataset(root="/home/kuohsin/workspace/dataset", train=True, supervised_count=SUPERVISED_COUNT * -1)
-    # dataset = torch.utils.data.ConcatDataset([s_dataset, us_dataset])
-    config_s = {
-        "batch_size": 64,
-        "num_workers": 0,
-        "drop_last": False,
-        "shuffle": True
-    }
-
-    config_us = {
-        "batch_size": 448,
-        "num_workers": 0,
-        "drop_last": False,
-        "shuffle": True
-    }
-    s_dataloader = torch.utils.data.DataLoader(s_dataset, **config_s)
-    us_dataloader = torch.utils.data.DataLoader(us_dataset, **config_us)
-
-    s_index_list = []
-    us_index_list = []
-
-    s_label_list = []
-    us_label_list = []
-
-    s_data_iter = iter(s_dataloader)
-    us_data_iter = iter(us_dataloader)
-
-    # for epoch in range(EPOCHS):
-        # for item1, item2 in tqdm(zip(us_dataloader, cycle(s_dataloader))):
-    for it in range(1000):
-        # for img, label in s_dataloader:
-
-        try:
-            item1 = next(s_data_iter)
-        except StopIteration:
-            # StopIteration is thrown if dataset ends
-            # reinitialize data loader
-            s_data_iter = iter(s_dataloader)
-            item1 = next(s_data_iter)
-
-        try:
-            item2 = next(us_data_iter)
-        except StopIteration:
-            # StopIteration is thrown if dataset ends
-            # reinitialize data loader
-            us_data_iter = iter(us_dataloader)
-            item2 = next(us_data_iter)
-
-        index_1, label_1 = item1
-        index_2, label_2 = item2
-
-        # print(img_1.shape, label_1.shape)
-        # print(img_2.shape, label_2.shape)
-
-        # img_1 = utils.tensor_to_cv2_image(img_1[0])
-        # img_aug_1 = utils.tensor_to_cv2_image(img_aug_1[0])
-        # img_2 = utils.tensor_to_cv2_image(img_2[0])
-        # cv2.imshow("img_1", img_1)
-        # cv2.imshow("img_aug_1", img_aug_1)
-        # cv2.imshow("img_2", img_2)
-        # cv2.waitKey(0)
-
-        s_index_list.append(index_1)
-        us_index_list.append(index_2)
-        s_label_list.append(label_1)
-        us_label_list.append(label_2)
-
-    # s_index_array = np.array(s_index_list)
-    s_index_array = np.concatenate(s_index_list)
-    us_index_array = np.concatenate(us_index_list)
-
-    s_label_array = np.concatenate(s_label_list)
-    us_label_array = np.concatenate(us_label_list)
-
-    s_frequency_list = [0] * len(s_dataset)
-    us_frequency_list = [0] * len(us_dataset)
-    for i in s_index_array:
-        s_frequency_list[i] += 1
-    for i in us_index_array:
-        us_frequency_list[i] += 1
-
-    print(s_index_array.shape, us_index_array.shape)
-
-    index_list = [i for i in range(50000)]
-    plt.scatter(index_list[:len(s_dataset)], s_frequency_list)
-    plt.title("s_frequency_list")
-    plt.show()
-
-    plt.hist(s_label_array)
-    plt.show()
-
-    plt.scatter(index_list[:len(us_dataset)], us_frequency_list)
-    plt.title("us_frequency_list")
-    plt.show()
-
-    plt.hist(us_label_array)
-    plt.show()
-
-    print(len(us_dataset))
