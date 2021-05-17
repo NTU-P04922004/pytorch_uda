@@ -143,16 +143,16 @@ class CIFAR10Dataset(Dataset):
 
     @staticmethod
     def get_data_transform(train):
+        # CIFAR10 data statatistics from
+        # https://github.com/google-research/uda/blob/master/image/randaugment/augmentation_transforms.py#L40-L43
         mean = (0.49139968, 0.48215841, 0.44653091)
         std = (0.24703223, 0.24348513, 0.26158784)
-        # mean = np.array([125.3, 123.0, 113.9]) / 255.0
-        # std = np.array([63.0, 62.1, 66.7]) / 255.0
         transform = None
         if train:
             transform = transforms.Compose([
                 transforms.RandomCrop(32, padding=4, padding_mode="reflect"),
                 transforms.RandomHorizontalFlip(),
-                RandAugment(3, 5),
+                # RandAugment(3, 5),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ])

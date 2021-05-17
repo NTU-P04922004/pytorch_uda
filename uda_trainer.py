@@ -11,15 +11,12 @@ from sklearn.metrics import accuracy_score, f1_score
 from torch import nn, optim
 from torch.utils import data
 from torch.utils.tensorboard import SummaryWriter
-from torchvision.models.mobilenet import MobileNetV2
+from tqdm import tqdm
 
 from cifar_dataset import CIFAR10Dataset
 from models.wideresnet import WideResNet
-# from swa_utils import AveragedModel
 from ema import ModelEMA
 
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
 
 class UDATrainer():
     def __init__(self, config, output_dir_path, pretrained=False):
@@ -65,6 +62,7 @@ class UDATrainer():
         self.save_frequency = int(config["trainer"]["save_frequency"])
         self.log_frequency = int(config["trainer"]["log_frequency"])
         self.val_frequency = int(config["trainer"]["val_frequency"])
+        self.ema_frequency = int(config["trainer"]["ema_frequency"])
 
         tb_train_dir = os.path.join(self.output_dir_path, "train")
         tb_val_dir = os.path.join(self.output_dir_path, "val")
@@ -115,8 +113,7 @@ class UDATrainer():
     def run(self):
 
         loss_list = []
-        # for epoch in range(self.current_epoch, self.max_epochs):
-        for _ in range(self.max_iterations):
+        for _ in tqdm(range(self.max_iterations)):
 
             # train_enter = time.perf_counter()
 
@@ -174,7 +171,7 @@ class UDATrainer():
 
             predictions_aug_us = self.model(imgs_aug_us)
 
-            confidence = F.softmax(predictions_us)
+            confidence = F.softmax(predictions_us, dim=1)
             top_confidence, _ = torch.max(confidence, axis=1)
             mask = top_confidence.ge(self.confidence_threshold)
             filtered_count = torch.sum(mask.long())
@@ -182,8 +179,8 @@ class UDATrainer():
             if filtered_count > 0:
                 predictions_us = predictions_us / self.softmax_temperature
                 loss_us = self.criterion_us(
-                    F.log_softmax(predictions_us),
-                    F.softmax(predictions_aug_us))
+                    F.log_softmax(predictions_us, dim=1),
+                    F.softmax(predictions_aug_us, dim=1))
                 filtered_losses = torch.masked_select(
                     loss_us.mean(1), mask)
                 loss += filtered_losses.sum() / batch_size_us
@@ -194,10 +191,10 @@ class UDATrainer():
         loss.backward()
         self.optimizer.step()
 
-        if self.ema and self.current_iter % 1000 == 0:
+        if self.ema:
             self.ema_model.update(self.model)
 
-        self.scheduler.step(loss.item())
+        self.scheduler.step()
 
         loss_list.append(float(loss))
 

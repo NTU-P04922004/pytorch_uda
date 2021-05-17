@@ -1,4 +1,4 @@
-exp_name: cifar10_momentum_all_tricks_iter_fix_ema bench
+exp_name: cifar10_momentum_all_tricks_iter_fix_ema_reproduce
 
 trainer_name: UDATrainer
 
@@ -6,14 +6,15 @@ model:
   num_classes: 10
 
 trainer:
-  num_iterations: 1000
+  num_iterations: 500000
   save_frequency: 900000 # iterations
-  log_frequency: 50 # iterations
+  log_frequency: 100 # iterations
   val_frequency: 100 # iterations
+  ema_frequency: 100 # iterations
   semi_supervised: True
   confidence_threshold: 0.8
   softmax_temperature: 0.4
-  ema_decay_rate: 0.9999
+  ema_decay_rate: 0.999
 
 train_supervised_dataset:
   root: /home/kuohsin/workspace/dataset
@@ -31,7 +32,7 @@ val_dataset:
 
 train_supervised_dataloader:
   batch_size: 64
-  num_workers: 2
+  num_workers: 4
   drop_last: True
   shuffle: True
   pin_memory: True
