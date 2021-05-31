@@ -1,4 +1,4 @@
-exp_name: cifar10_momentum_randaugment
+exp_name: cifar10_momentum_randaug_2_5_cutout_checkpoint_test
 
 trainer_name: CIFARTrainer
 
@@ -6,12 +6,11 @@ model:
   num_classes: 10
 
 trainer:
-  num_epochs: 200
-  save_frequency: 100 # epochs
+  num_epochs: 10
+  save_frequency: 5 # epochs
   log_frequency: 390 # iterations
   val_frequency: 390 # iterations
-  ema_frequency: 100 # iterations
-  ema_decay_rate: 0.9999
+  ema_decay_rate: 0.999
 
 train_dataset:
   root: /home/kuohsin/workspace/dataset
@@ -37,10 +36,7 @@ val_dataloader:
 
 optimizer:
   lr: 1.e-1
-  # betas: [0.9, 0.999]
   weight_decay: 5.e-4
-  # eps: 1e-8
-  # amsgrad: False
   momentum: 0.9
   # nesterov: True
 

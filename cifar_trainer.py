@@ -44,7 +44,6 @@ class CIFARTrainer():
         self.train_loader = data.DataLoader(train_dataset, **config["train_dataloader"])
         self.val_loader = data.DataLoader(val_dataset, **config["val_dataloader"])
 
-        # self.optimizer = optim.Adam(self.model.parameters(), **config["optimizer"])
         self.optimizer = optim.SGD(self.model.parameters(), **config["optimizer"])
 
         config["scheduler"]["T_max"] = len(train_dataset) // config["train_dataloader"]["batch_size"] *  self.max_epochs
@@ -54,7 +53,6 @@ class CIFARTrainer():
         self.save_frequency = int(config["trainer"]["save_frequency"])
         self.log_frequency = int(config["trainer"]["log_frequency"])
         self.val_frequency = int(config["trainer"]["val_frequency"])
-        self.ema_frequency = int(config["trainer"]["ema_frequency"])
 
         tb_train_dir = os.path.join(self.output_dir_path, "train")
         tb_val_dir = os.path.join(self.output_dir_path, "val")
@@ -84,8 +82,8 @@ class CIFARTrainer():
 
         torch.save({
             "weights": self.model.state_dict(),
-            # "optimizer": self.optimizer.state_dict(),
-            # "scheduler": self.scheduler.state_dict(),
+            "optimizer": self.optimizer.state_dict(),
+            "scheduler": self.scheduler.state_dict(),
             "iteration": self.current_iter,
             "epoch": self.current_epoch
         }, weight_name)
@@ -95,10 +93,12 @@ class CIFARTrainer():
     def load(self, checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
         self.model.load_state_dict(checkpoint["weights"], strict=True)
-        # self.optimizer.load_state_dict(checkpoint["optimizer"])
-        # self.scheduler.load_state_dict(checkpoint["scheduler"])
-        self.current_iter = checkpoint["iteration"]
-        self.current_epoch = checkpoint["epoch"]
+
+        if not self.pretrained:
+            self.optimizer.load_state_dict(checkpoint["optimizer"])
+            self.scheduler.load_state_dict(checkpoint["scheduler"])
+            self.current_iter = checkpoint["iteration"]
+            self.current_epoch = checkpoint["epoch"]
 
     def run(self):
 
@@ -149,7 +149,7 @@ class CIFARTrainer():
             if self.current_iter % self.log_frequency == 0:
                 self.tb_writer_train.add_scalar("loss", float(loss), self.current_iter)
 
-            if self.ema and self.current_iter % self.ema_frequency == 0:
+            if self.ema:
                 self.ema_model.update(self.model)
 
             if self.scheduler is not None:

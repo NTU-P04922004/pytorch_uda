@@ -39,7 +39,7 @@ if __name__ == "__main__":
                       help="path to weights file (default: None)")
     args.add_argument("--pretrained",
                       action="store_true",
-                      help="Use pretrained weights")
+                      help="Finetune pretrained weights")
     args.add_argument("--debug",
                       action="store_true",
                       help="Enalbe debug mode")

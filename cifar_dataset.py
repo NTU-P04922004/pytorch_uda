@@ -11,10 +11,13 @@ from torchvision import transforms
 from torchvision.datasets.utils import check_integrity
 
 import utils
-from randaugment import RandAugment
+from ppcls_randaugment import RandAugment
 
 
 class CIFAR10Dataset(Dataset):
+    # Based on torchvision
+    # https://github.com/pytorch/vision/blob/v0.8.2/torchvision/datasets/cifar.py
+    #
     base_folder = 'cifar-10-batches-py'
     url = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
     filename = "cifar-10-python.tar.gz"
@@ -46,8 +49,8 @@ class CIFAR10Dataset(Dataset):
         self.root = root
         self.train = train
         self.supervised_count = supervised_count
-        self.default_transform = self.get_data_transform(False)
-        self.transform = self.get_data_transform(self.train)
+        self.default_transform = self.get_data_transform(self.train, True)
+        self.transform = self.get_data_transform(self.train, False)
         self.target_transform = None
 
         if not self._check_integrity():
@@ -117,8 +120,6 @@ class CIFAR10Dataset(Dataset):
 
         return img, transformed_img, target
 
-        # return index, self.targets[index]
-
     def __len__(self):
         return len(self.data)
 
@@ -142,23 +143,32 @@ class CIFAR10Dataset(Dataset):
         return True
 
     @staticmethod
-    def get_data_transform(train):
+    def get_data_transform(train, is_simple_aug=True):
         # CIFAR10 data statatistics from
         # https://github.com/google-research/uda/blob/master/image/randaugment/augmentation_transforms.py#L40-L43
         mean = (0.49139968, 0.48215841, 0.44653091)
         std = (0.24703223, 0.24348513, 0.26158784)
         transform = None
+        transform_list = []
         if train:
-            transform = transforms.Compose([
+            # Default agumentation
+            transform_list += [
                 transforms.RandomCrop(32, padding=4, padding_mode="reflect"),
-                transforms.RandomHorizontalFlip(),
-                # RandAugment(3, 5),
-                transforms.ToTensor(),
-                transforms.Normalize(mean, std),
-            ])
-        else:
-            transform = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(mean, std),
-            ])
+                transforms.RandomHorizontalFlip()
+            ]
+
+        # Convert image to tensor
+        transform_list += [
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ]
+
+        # Add CutOut augmentation
+        if train and not is_simple_aug:
+            transform_list += [
+                transforms.RandomErasing(scale=(0.25, 0.25), ratio=(1.0, 1.0), inplace=False),
+            ]
+
+        transform = transforms.Compose(transform_list)
+
         return transform

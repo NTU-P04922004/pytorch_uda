@@ -20,7 +20,6 @@ from ema import ModelEMA
 
 class UDATrainer():
     def __init__(self, config, output_dir_path, pretrained=False):
-        # self.max_epochs = config["trainer"]["num_epochs"]
         self.max_iterations = config["trainer"]["num_iterations"]
 
         self.device = torch.device(
@@ -43,7 +42,6 @@ class UDATrainer():
         self.criterion_s = nn.CrossEntropyLoss()
         self.criterion_us = nn.KLDivLoss(reduction="none")
 
-        # self.optimizer = optim.AdamW(self.model.parameters(), )
         self.optimizer = optim.SGD(self.model.parameters(), **config["optimizer"])
         self.scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, **config["scheduler"])
 
@@ -62,7 +60,6 @@ class UDATrainer():
         self.save_frequency = int(config["trainer"]["save_frequency"])
         self.log_frequency = int(config["trainer"]["log_frequency"])
         self.val_frequency = int(config["trainer"]["val_frequency"])
-        self.ema_frequency = int(config["trainer"]["ema_frequency"])
 
         tb_train_dir = os.path.join(self.output_dir_path, "train")
         tb_val_dir = os.path.join(self.output_dir_path, "val")
@@ -82,12 +79,10 @@ class UDATrainer():
         self.model.to(self.device)
 
     def save_train_files(self):
-        config_file_path = "config/uda_trainer.yaml"
-        trainer_file_path = "uda_trainer.py"
-        shutil.copy(config_file_path,
-                    os.path.join(self.output_dir_path, os.path.basename(config_file_path)))
-        shutil.copy(trainer_file_path,
-                    os.path.join(self.output_dir_path, os.path.basename(trainer_file_path)))
+        file_path_list = ["config/uda_trainer.yaml", "uda_trainer.py", "cifar_dataset.py", "randaugment.py"]
+        for path in file_path_list:
+            out_path = os.path.join(self.output_dir_path, os.path.basename(path))
+            shutil.copy(path, out_path)
 
     def save(self, snapshot_dir):
         weight_name = os.path.join(snapshot_dir, "model_%08d.pth" % (self.current_iter))
@@ -105,10 +100,12 @@ class UDATrainer():
     def load(self, checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
         self.model.load_state_dict(checkpoint["weights"], strict=True)
-        self.optimizer.load_state_dict(checkpoint["optimizer"])
-        self.scheduler.load_state_dict(checkpoint["scheduler"])
-        self.current_iter = checkpoint["iteration"]
-        self.current_epoch = checkpoint["epoch"]
+
+        if not self.pretrained:
+            self.optimizer.load_state_dict(checkpoint["optimizer"])
+            self.scheduler.load_state_dict(checkpoint["scheduler"])
+            self.current_iter = checkpoint["iteration"]
+            self.current_epoch = checkpoint["epoch"]
 
     def run(self):
 
@@ -240,7 +237,6 @@ class UDATrainer():
         y_pred = np.concatenate(pred_list, axis=0)
         y_true = np.concatenate(target_list, axis=0)
 
-        # f1 = f1_score(y_true, y_pred.argmax(axis=1), average="macro")
         accuracy = accuracy_score(y_true, y_pred.argmax(axis=1))
         mean_accuracy = np.nan_to_num(accuracy).mean()
 
@@ -248,7 +244,6 @@ class UDATrainer():
 
         tb_writer = self.tb_writer_val if not ema_model else self.tb_writer_val_ema
         tb_writer.add_scalar("loss", avg_loss, self.current_iter)
-        # tb_writer.add_scalar("f1_score", f1, self.current_iter)
         tb_writer.add_scalar("accuracy", mean_accuracy, self.current_iter)
         print("[validation] loss: %.4f, accuracy: %.4f, time: %.4f sec." %
               (avg_loss, mean_accuracy, (end_time - start_time)))

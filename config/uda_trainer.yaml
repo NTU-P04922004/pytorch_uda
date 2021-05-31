@@ -1,4 +1,4 @@
-exp_name: cifar10_momentum_all_tricks_iter_fix_ema_reproduce
+exp_name: cifar10_momentum_all_tricks_cutout_reproduce
 
 trainer_name: UDATrainer
 
@@ -10,7 +10,6 @@ trainer:
   save_frequency: 900000 # iterations
   log_frequency: 100 # iterations
   val_frequency: 100 # iterations
-  ema_frequency: 100 # iterations
   semi_supervised: True
   confidence_threshold: 0.8
   softmax_temperature: 0.4
@@ -53,10 +52,7 @@ val_dataloader:
 
 optimizer:
   lr: 3.e-2
-  # betas: [0.9, 0.999]
   weight_decay: 5.e-4
-  # eps: 1e-8
-  # amsgrad: False
   momentum: 0.9
   nesterov: True
 
