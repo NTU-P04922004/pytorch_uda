@@ -1,3 +1,7 @@
+#
+# Source code extracted from https://github.com/ultralytics/yolov3/blob/v7/utils/torch_utils.py
+#
+
 import math
 import os
 import time
@@ -12,9 +16,6 @@ import torch.nn.functional as F
 
 class ModelEMA:
     """
-    Taken from YOLOv3
-    https://github.com/pytorch/benchmark/blob/master/torchbenchmark/models/yolov3/yolo_utils/torch_utils.py
-
     Model Exponential Moving Average from https://github.com/rwightman/pytorch-image-models
     Keep a moving average of everything in the model state_dict (parameters and buffers).
     This is intended to allow functionality like

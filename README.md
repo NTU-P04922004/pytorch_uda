@@ -6,15 +6,15 @@ This an unofficial implementation of the NeurIPS 2020 paper ```Unsupervised Data
 
 ## Results
 
-### CIFAR-10 with 4,000 labeled samples
+### Error rates on CIFAR-10 test set
 
 Augmentation     | Paper        | Reproduced   |
 ---------------- | :----------: | :----------: |
 Crop and flip    | 10.94        | 10.93        |
 CutOut           | 5.43         | 6.00         |
 
-* The number means error rates on CIFAR-10 test set
-* 46,000 unlabeled samples are also used for semi-supervised learning
+* Setting: CIFAR-10 4000
+* Training with 4,000 labeled samples and 46,000 unlabeled samples
 
 ## Requirements
 
@@ -29,10 +29,11 @@ CutOut           | 5.43         | 6.00         |
 
 ## Usage
 
-See train.py for more information
+See ```train.py``` and config files in the ```config``` folder for more information
 
 ## References
 
 - [Unsupervised Data Augmentation for Consistency Training](https://arxiv.org/abs/1904.12848)
 
 ## License
+GPLv3
