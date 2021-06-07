@@ -148,15 +148,15 @@ class UDATrainer():
             self.train_unsupervised_iter = iter(self.train_unsupervised_loader)
             batch_us = next(self.train_unsupervised_iter)
 
-        _, imgs_aug_s, labels_s = batch_s
-        imgs_aug_s = imgs_aug_s.to(self.device)
+        imgs_s, _, labels_s = batch_s
+        imgs_s = imgs_s.to(self.device)
         labels = labels_s.to(self.device)
 
         imgs_us, imgs_aug_us, _ = batch_us
         imgs_us = imgs_us.to(self.device)
         imgs_aug_us = imgs_aug_us.to(self.device)
 
-        predictions = self.model(imgs_aug_s)
+        predictions = self.model(imgs_s)
         loss_s = self.criterion_s(predictions, labels)
         loss = loss_s
 

@@ -19,8 +19,8 @@ class CIFAR10Dataset(Dataset):
     # https://github.com/pytorch/vision/blob/v0.8.2/torchvision/datasets/cifar.py
     #
     base_folder = 'cifar-10-batches-py'
-    url = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
-    filename = "cifar-10-python.tar.gz"
+    url = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
+    filename = 'cifar-10-python.tar.gz'
     tgz_md5 = 'c58f30108f718f92721af3b95e74349a'
     train_list = [
         ['data_batch_1', 'c99cafc152244af753f735de768cd75f'],
@@ -116,7 +116,7 @@ class CIFAR10Dataset(Dataset):
         img = self.default_transform(img)
 
         # load_elapsed = time.perf_counter() - load_enter
-        # print("LOAD", "S" if self.supervised_count > 0 else "US", load_enter, load_elapsed)
+        # print('LOAD', 'S' if self.supervised_count > 0 else 'US', load_enter, load_elapsed)
 
         return img, transformed_img, target
 
@@ -148,12 +148,11 @@ class CIFAR10Dataset(Dataset):
         # https://github.com/google-research/uda/blob/master/image/randaugment/augmentation_transforms.py#L40-L43
         mean = (0.49139968, 0.48215841, 0.44653091)
         std = (0.24703223, 0.24348513, 0.26158784)
-        transform = None
         transform_list = []
         if train:
             # Default agumentation
             transform_list += [
-                transforms.RandomCrop(32, padding=4, padding_mode="reflect"),
+                transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
                 transforms.RandomHorizontalFlip()
             ]
 
@@ -169,6 +168,4 @@ class CIFAR10Dataset(Dataset):
                 transforms.RandomErasing(scale=(0.25, 0.25), ratio=(1.0, 1.0), inplace=False),
             ]
 
-        transform = transforms.Compose(transform_list)
-
-        return transform
+        return transforms.Compose(transform_list)

@@ -127,11 +127,11 @@ class CIFARTrainer():
         for batch_data in tqdm(self.train_loader):
             self.current_iter += 1
 
-            _, imgs, labels = batch_data
-            imgs = imgs.to(self.device)
+            _, imgs_aug, labels = batch_data
+            imgs_aug = imgs_aug.to(self.device)
             labels = labels.to(self.device)
 
-            predictions = self.model(imgs)
+            predictions = self.model(imgs_aug)
             loss = self.criterion(predictions, labels)
 
             self.optimizer.zero_grad()

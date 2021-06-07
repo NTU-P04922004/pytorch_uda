@@ -1,4 +1,4 @@
-exp_name: cifar10_momentum_all_tricks_cutout_reproduce
+exp_name: uda_cifar10_all_tricks_cutout_all_simple_aug
 
 trainer_name: UDATrainer
 

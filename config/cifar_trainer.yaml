@@ -1,4 +1,4 @@
-exp_name: cifar10_momentum_randaug_2_5_cutout_checkpoint_test
+exp_name: cifar10_momentum_cutout
 
 trainer_name: CIFARTrainer
 
@@ -6,8 +6,8 @@ model:
   num_classes: 10
 
 trainer:
-  num_epochs: 10
-  save_frequency: 5 # epochs
+  num_epochs: 200
+  save_frequency: 100 # epochs
   log_frequency: 390 # iterations
   val_frequency: 390 # iterations
   ema_decay_rate: 0.999
