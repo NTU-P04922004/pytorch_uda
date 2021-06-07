@@ -72,7 +72,7 @@ class CIFARTrainer():
         self.model.to(self.device)
 
     def save_train_files(self):
-        file_path_list = ["config/cifar_trainer.yaml", "cifar_trainer.py", "cifar_dataset.py", "randaugment.py"]
+        file_path_list = ["config/cifar_trainer.yaml", "cifar_trainer.py", "cifar_dataset.py"]
         for path in file_path_list:
             out_path = os.path.join(self.output_dir_path, os.path.basename(path))
             shutil.copy(path, out_path)
