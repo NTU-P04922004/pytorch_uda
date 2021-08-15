@@ -2,7 +2,7 @@
 
 ## Overview
 
-This an unofficial implementation of the NeurIPS 2020 paper ```Unsupervised Data Augmentation (UDA)```.
+This is an unofficial implementation of the NeurIPS 2020 paper ```Unsupervised Data Augmentation (UDA)```.
 
 ## Results
 
